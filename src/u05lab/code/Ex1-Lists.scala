@@ -115,19 +115,81 @@ trait ListImplementation[A] extends List[A] {
     case Nil() => Nil()
   }
 
-  override def zipRight: List[(A,Int)] = ??? // questions: what is the type of keyword ???
+  override def zipRight: List[(A,Int)] = {
+    def _zipRight(l: List[A], k: Int, res: List[(A,Int)]): List[(A,Int)]  = l match {
+      case h :: t => _zipRight(t, k+1, (h,k) :: res)
+      case _ => res
+    }
+    _zipRight(this, 0, List.nil).reverse()
+  } // questions: what is the type of keyword ???
 
-  override def partition(pred: A => Boolean): (List[A],List[A]) = ???
+  override def partition(pred: A => Boolean): (List[A],List[A]) =  {
+    var listSatisfy: List[A] = List.nil
+    var listNotSatisfy: List[A] = List.nil
 
-  override def span(pred: A => Boolean): (List[A],List[A]) = ???
+    def _partition(l: List[A], pred: A => Boolean): (List[A],List[A])  = l match {
+      case h :: t if pred(h) => {
+        listSatisfy = listSatisfy.append(List.cons(h, List.nil))
+        _partition(t, pred)
+      }
+      case h :: t if !pred(h) => {
+        listNotSatisfy = listNotSatisfy.append(List.cons(h, List.nil))
+        _partition(t, pred)
+      }
+      case _ => (listSatisfy, listNotSatisfy)
+    }
+    _partition(this, pred)
+  }
+
+  override def span(pred: A => Boolean): (List[A],List[A]) = {
+    var listSatisfy: List[A] = List.nil
+    var listNotSatisfy: List[A] = List.nil
+
+    def _span(l: List[A], pred: A => Boolean): (List[A],List[A])  = l match {
+      case h :: t if pred(h) => {
+        listSatisfy = listSatisfy.append(List.cons(h, List.nil))
+        _span(t, pred)
+      }
+      case h :: t if !pred(h) => {
+        listNotSatisfy = listNotSatisfy.append(List.cons(h, List.nil))
+        _span(t, _ => false)
+      }
+      case _ => (listSatisfy, listNotSatisfy)
+    }
+    _span(this, pred)
+  }
 
   /**
     *
     * @throws UnsupportedOperationException if the list is empty
     */
-  override def reduce(op: (A,A)=>A): A = ???
+  override def reduce(op: (A,A)=>A): A = {
+    if(this.equals(List.nil)){
+      throw new UnsupportedOperationException()
+    }
+    val red: A = this.head.get
 
-  override def takeRight(n: Int): List[A] = ???
+    def _reduce(l: List[A], op: (A,A)=>A, red: A): A = l match {
+      case h :: t => _reduce(t, op, op(h, red))
+      case _ => red
+    }
+
+    _reduce(this.tail.get, op, red)
+  }
+
+  override def takeRight(n: Int): List[A] = {
+    var listRight: List[A] = List.nil
+
+    def _takeRight(l: List[A], n: Int): List[A] = l match {
+      case h :: t if n > 0 => {
+        listRight = listRight.append(Cons(h, Nil()))
+        _takeRight(t, n-1)
+      }
+      case _ => listRight
+    }
+
+    _takeRight(this.reverse(), n).reverse()
+  }
 }
 
 // Factories
