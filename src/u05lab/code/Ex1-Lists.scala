@@ -41,6 +41,9 @@ sealed trait List[A] {
 
   // right-associative construction: 10 :: 20 :: 30 :: Nil()
   def ::(head: A): List[A] = Cons(head,this)
+
+  /* Exercise 6 */
+  def collect[B](partialFunction: PartialFunction[A,B]): List[B]
 }
 
 // defining concrete implementations based on the same template
@@ -190,6 +193,9 @@ trait ListImplementation[A] extends List[A] {
 
     _takeRight(this.reverse(), n).reverse()
   }
+
+  override def collect[B](partialFunction: PartialFunction[A, B]): List[B] =
+    this.filter(el => partialFunction.isDefinedAt(el)).map(partialFunction)
 }
 
 // Factories
@@ -245,5 +251,5 @@ object ListsTest extends App {
   println(l.takeRight(2)) // Cons(30,Cons(40,Nil()))
 
   // Ex. 6: collect
-  // println(l.collect { case x if x<15 || x>35 => x-1 }) // Cons(9, Cons(39, Nil()))
+  println(l.collect { case x if x<15 || x>35 => x-1 }) // Cons(9, Cons(39, Nil()))
 }
